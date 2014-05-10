@@ -80,7 +80,7 @@ func parseFile(filename string) {
 			lword := strings.ToLower(word)
 			if misspelling, ok := misspellings[lword]; ok {
 				fixword := fixCase(word, misspelling.data)
-				fmt.Printf("%s:%d: %s ==> %s\n", filename, i, word, fixword)
+				fmt.Printf("\033[33m%s:%d\033[0m: \033[31m%s\033[0m ==> \033[32m%s\033[0m\n", filename, i, word, fixword)
 			}
 		}
 
