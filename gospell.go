@@ -28,14 +28,15 @@ var (
 )
 
 func buildMisspellings(filename *string) {
+	var fix bool
+	var reason string
 	misspellings = make(map[string]misspelling)
+
 	f, _ := os.Open(*filename)
 	defer f.Close()
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		var fix bool
-		var reason string
 		line := scanner.Text()
 		items := strings.Split(line, "->")
 
