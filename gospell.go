@@ -6,6 +6,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
 	"os"
@@ -70,11 +71,27 @@ func fixCase(word string, fixword string) string {
 	}
 }
 
+func isBinary(file *os.File) bool {
+	data := make([]byte, 1024)
+	count, _ := file.Read(data)
+	file.Seek(0, 0)
+	if bytes.Index(data[:count], []byte("\x00")) != -1 {
+		return true
+	}
+	return false
+}
+
 func parseFile(filename string) {
 	defer wg.Done()
 	var i int
 	f, _ := os.Open(filename)
 	defer f.Close()
+
+	// skip binary files
+	if isBinary(f) {
+		return
+	}
+
 	s := bufio.NewScanner(f)
 	for s.Scan() {
 		for _, word := range rx.FindAllString(s.Text(), -1) {
