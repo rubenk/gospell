@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github.com/kr/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -113,22 +114,28 @@ func isHidden(path string) bool {
 	return false
 }
 
-func walker(path string, info os.FileInfo, err error) error {
-	if info.IsDir() {
-		if isHidden(path) {
-			return filepath.SkipDir
+func visit(filename string) error {
+	walker := fs.Walk(filename)
+	for walker.Step() {
+		if err := walker.Err(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			continue
+		}
+		path := walker.Path()
+		info := walker.Stat()
+		if info.IsDir() {
+			if isHidden(path) {
+				walker.SkipDir()
+			}
 		}
 		if info.Mode()&os.ModeSymlink == os.ModeSymlink {
-			return filepath.SkipDir
+			walker.SkipDir()
 		}
-		return nil
+		if info.Mode().IsRegular() {
+			wg.Add(1)
+			go parseFile(path)
+		}
 	}
-
-	if info.Mode().IsRegular() {
-		wg.Add(1)
-		go parseFile(path)
-	}
-
 	return nil
 }
 
@@ -143,7 +150,7 @@ func main() {
 	buildMisspellings(dictionary)
 
 	for _, filename := range args {
-		filepath.Walk(filename, walker)
+		visit(filename)
 	}
 	wg.Wait()
 }
