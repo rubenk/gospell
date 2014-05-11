@@ -133,7 +133,7 @@ func walker(path string, info os.FileInfo, err error) error {
 }
 
 func main() {
-	dictionary := flag.String("dictionary", "/usr/share/codespell/dictionary.txt", "Custom dictionary file that contains spelling corrections")
+	dictionary := flag.String("dictionary", "dictionary.txt", "Custom dictionary file that contains spelling corrections")
 	flag.Parse()
 	args := flag.Args()
 	if len(args) == 0 {
