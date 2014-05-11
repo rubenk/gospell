@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"sync"
 )
@@ -24,7 +23,6 @@ type misspelling struct {
 
 var (
 	misspellings map[string]misspelling
-	rx           = regexp.MustCompile(`[\w\-]+`)
 	wg           sync.WaitGroup
 )
 
@@ -82,8 +80,8 @@ func isBinary(file *os.File) bool {
 }
 
 func parseFile(filename string) {
+	var word, lword string
 	defer wg.Done()
-	var i int
 	f, _ := os.Open(filename)
 	defer f.Close()
 
@@ -93,16 +91,16 @@ func parseFile(filename string) {
 	}
 
 	s := bufio.NewScanner(f)
+	s.Split(bufio.ScanWords)
 	for s.Scan() {
-		for _, word := range rx.FindAllString(s.Text(), -1) {
-			lword := strings.ToLower(word)
-			if misspelling, ok := misspellings[lword]; ok {
+		word = s.Text()
+		lword = strings.ToLower(word)
+		if misspelling, ok := misspellings[lword]; ok {
+			if misspelling.fix {
 				fixword := fixCase(word, misspelling.data)
-				fmt.Printf("%s:%d: \033[31m%s\033[0m ==> \033[32m%s\033[0m\n", filename, i, word, fixword)
+				fmt.Printf("%s: \033[31m%s\033[0m ==> \033[32m%s\033[0m\n", filename, word, fixword)
 			}
 		}
-
-		i++
 	}
 }
 
