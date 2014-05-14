@@ -12,6 +12,7 @@ import (
 	"github.com/kr/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 )
@@ -140,6 +141,7 @@ func visit(filename string) error {
 }
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	dictionary := flag.String("dictionary", "dictionary.txt", "Custom dictionary file that contains spelling corrections")
 	flag.Parse()
 	args := flag.Args()
